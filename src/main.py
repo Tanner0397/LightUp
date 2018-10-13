@@ -97,21 +97,18 @@ def main():
 
         #---------ENDING PUZZLE GENERATION/READING--------------
         #---------START SOLVING PUZZLE FOR THIS RUN------------
-        best_member = solver.evolution_algorithm(puzzle)
-        current_fitness = best_member.verify_solution()
-        #Store the solution
-        if current_fitness > best_fitness:
-            solution_writer.write_solution(best_member)
-            best_fitness = current_fitness
-        #---------END SOLVING------------------------
-        # test_member = Population_Member(puzzle)
-        # print(test_member.puzzle.map_image())
-        # print(test_member.get_fitness())
-        # print(test_member)
-        # test_member.repair()
-        # print(test_member.puzzle.map_image())
-        # print(test_member.get_fitness())
-        # print(test_member)
+        # best_member = solver.evolution_algorithm(puzzle)
+        # current_fitness = best_member.verify_solution()
+        # #Store the solution
+        # if current_fitness > best_fitness:
+        #     solution_writer.write_solution(best_member)
+        #     best_fitness = current_fitness
+        #---------END SOLVING-----------------------
+
+
+        test_inst = evolution.Evolution_Instance(puzzle)
+        print("Testing. Population Size {}".format(len(test_inst.population)))
+        test_inst.dom_table.print_table_info()
 
 
         #-------TESTING-----------

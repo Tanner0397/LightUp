@@ -31,10 +31,21 @@ class Population_Member:
     Return: None
     This function is the constructor for the population member object. If a chromosome is not passes, then this a member of the intial populaion so it will use random search
     and attempt to solve their puzzle. If a chromomes is passes, then the population emmebr uses that chromosome to generate their phenotype (the bulb placement on the board).
+
+    Members:
+        puzzle: Solution instance, used to calculate fitness of member
+        chromosome: Chromsome the represetns this members
+        chromosome_length: length of the members chromosome
+        fitness: base fitness based on number of panels lit, maxizing
+        shine_fitness: Number of bulbs that shine on each other, minimizing
+        wall_fitness: numebr of walls that are not satisfied, minimizing
+
     """
     def __init__(self, puzzle, chromo=None):
         #initial fitness value
         self.fitness = 0
+        self.shine_fitness = 0
+        self.wall_fitness = 0
         self.puzzle = puzzle
         #We are an initial population member so we must solve the puzzle using Random search
         if chromo is None:
@@ -107,6 +118,8 @@ class Population_Member:
     """
     def evaluate_fitness(self):
         self.fitness = self.puzzle.verify_solution()
+        self.shine_fitness = self.puzzle.shine_fitness()
+        self.wall_fitness = self.puzzle.wall_fitness()
 
     """
     Parameters: None
@@ -115,6 +128,12 @@ class Population_Member:
     """
     def get_fitness(self):
         return self.fitness
+
+    def get_shine_fitness(self):
+        return self.shine_fitness
+
+    def get_wall_fitness(self):
+        return self.wall_fitness
 
     """
     Parameters: gene
@@ -166,6 +185,10 @@ class Population_Member:
 
 
     """
+
+    """
+
+    """
     Equality and Inequality operators defined based off of fitness of population member
     """
     def __eq__(self, other):
@@ -184,4 +207,4 @@ class Population_Member:
         return self.fitness > other.fitness
 
     def __ge__(self, other):
-        return self.fitness >= other.fitness
+        return self.fitness >= other.fitnes

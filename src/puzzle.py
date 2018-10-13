@@ -9,6 +9,7 @@ import configparser
 import sys
 import random
 from panels import Puzzle_panel
+from panels import DEFAULT_WALL
 from shine_list import shine_list
 
 config = configparser.ConfigParser()
@@ -518,7 +519,7 @@ class Light_puzzle:
                 if current_panel.wall == False and current_panel.lit == True:
                     health_value+=1
                 #check if wall have the correct number of adjacent bulbs if the value isn't 5. Check the wall using check_wall()
-                if enforce_wall_value == True and current_panel.wall == True and current_panel.wall_value != 5 and self.check_wall(current_panel) == False:
+                if enforce_wall_value == True and current_panel.wall == True and current_panel.wall_value != DEFAULT_WALL and self.check_wall(current_panel) == False:
                     return 0
                 #Check of this bulb shines on another bulb
                 if current_panel.bulb == True and self.check_bulb(current_panel) == False:
@@ -554,7 +555,7 @@ class Light_puzzle:
                 if current_panel.wall == False and current_panel.lit == True:
                     health_value+=1
                 #check if wall have the correct number of adjacent bulbs if the value isn't 5. Check the wall using check_wall().
-                if enforce_wall_value == True and current_panel.wall == True and current_panel.wall_value != 5 and self.check_wall(current_panel) == False:
+                if enforce_wall_value == True and current_panel.wall == True and current_panel.wall_value != DEFAULT_WALL and self.check_wall(current_panel) == False:
                     penalty+=1
                 #Check of this bulb shines on another bulb, if so increment panalty
                 if current_panel.bulb == True and self.check_bulb(current_panel) == False:
@@ -563,8 +564,34 @@ class Light_puzzle:
         if health_value-penalty*penalty_coefficient > 0:
             return int(health_value-penalty*penalty_coefficient)
         else:
-            return 0
+            # If all solutions are invlaid, returns 0 to prevent fitness_prop from breaking.
+            return 1
 
+
+    """
+    Parameters: None
+    Return: Interger
+    This function returns an interger of the number of bulbs that shine on each other. The function for getting the list of bulbs that shine on each other is
+    already implmented because of the repair function.
+    """
+    def shine_fitness(self):
+        shine_list = self.repair_shine_list()
+        return len(shine_list)
+
+
+    """
+    Parmeters: None
+    Return: Integer
+    This function returns the number of wall violations.
+    """
+    def wall_fitness(self):
+        wall_violations = 0
+        for i in range(0, self.rows):
+            for j in range(0, self.cols):
+                current_panel = self.map[i][j]
+                if current_panel.wall == True and current_panel.wall_value != DEFAULT_WALL and self.check_wall(current_panel) == False:
+                    wall_violations+=1
+        return wall_violations
 
 
     """
@@ -590,7 +617,7 @@ class Light_puzzle:
                 elif self.map[i][j].bulb == True:
                     string += 'B'
                 elif self.map[i][j].wall == True:
-                    if(self.map[i][j].wall_value < 5):
+                    if(self.map[i][j].wall_value < DEFAULT_WALL):
                         string += str(self.map[i][j].wall_value)
                     else:
                         string += 'W'

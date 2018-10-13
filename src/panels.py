@@ -14,6 +14,8 @@ This object keeps track of its position in the map so that it is easier to obtai
 indicies of the panel to check things such wen placing a bulb the panels sharing the same row and col are lit. This avoids an O(m*n) time search everytime
 we need to look for a panel.
 """
+DEFAULT_WALL = 5
+
 class Puzzle_panel:
     def __init__(self, rw, cl):
         self.lit = False #all panels are intinally not lit

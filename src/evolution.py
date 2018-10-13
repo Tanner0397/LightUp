@@ -12,6 +12,7 @@ import copy
 import solver
 from chromosome import chromosome
 from population_member import Population_Member
+from domination_table import domination_table
 
 config = configparser.ConfigParser()
 
@@ -42,6 +43,9 @@ class Evolution_Instance:
             puzzle_copy = copy.deepcopy(self.puzzle)
             #Give that population member a puzzle to solve
             self.population.append(Population_Member(puzzle_copy))
+
+        #Create domination table after the inital population is already created
+        self.dom_table = domination_table(self.population)
 
     """
     Paramters: (tuple, chromosome) where tuple is a mutated gene in chromosome
