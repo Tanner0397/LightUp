@@ -1,0 +1,33 @@
+#Testing File for no enformcnet while reading.
+#All values that have a 'yes' or a 'no' can only be 'yes' or 'no'
+#All values that are nonnegative integers can only be nonnegative integers
+#seed is the only floating point value
+
+
+[GENERATOR]
+#Generator Settings
+#settings this to no will allow the program to construct a game using a date file
+generate = no
+rows = 12
+cols = 10
+#Base percentage of panels that are walls. Number of walls may be slightly higher in order to guarantee solvability
+wall_percent = 25
+#If the seed is empty, program will generate map based off of time. Only use floating point numbers.
+seed = 0.08227618304513995
+
+[PATHS]
+#Paths should be relative to where run.sh is located, so the root of the project folder
+file_path = maps/game.txt
+log_path = testing/logs/log_read_no_enforce.txt
+solution_path = testing/solutions/solution_read_no_enforce.txt
+solution_image = testing/solutions/soln_image_read_no_enforce.txt
+
+[STATISTICS]
+#The number of runs in a single experiment
+runs = 30
+#The number of evaluations in a single run
+evals = 10000
+
+[PARAMETERS]
+#Random search can be slow, so this option is to ignore the wall value enforcement
+enforce_wall_value = no

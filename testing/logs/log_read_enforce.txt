@@ -1,0 +1,93 @@
+Date File: maps/game.txt
+Seed: 0.08227618304513995
+Results Log
+
+Run 1
+1	0
+
+Run 2
+1	0
+
+Run 3
+1	0
+
+Run 4
+1	0
+
+Run 5
+1	0
+
+Run 6
+1	0
+
+Run 7
+1	0
+
+Run 8
+1	0
+
+Run 9
+1	0
+
+Run 10
+1	0
+
+Run 11
+1	0
+
+Run 12
+1	0
+
+Run 13
+1	0
+
+Run 14
+1	0
+
+Run 15
+1	0
+
+Run 16
+1	0
+
+Run 17
+1	0
+
+Run 18
+1	0
+
+Run 19
+1	0
+
+Run 20
+1	0
+
+Run 21
+1	0
+
+Run 22
+1	0
+
+Run 23
+1	0
+
+Run 24
+1	0
+
+Run 25
+1	0
+
+Run 26
+1	0
+
+Run 27
+1	0
+
+Run 28
+1	0
+
+Run 29
+1	0
+
+Run 30
+1	0
