@@ -3,6 +3,8 @@ Tanner Wendland
 10/13/18
 CS5401
 Missouri University of Science and Technology
+
+Not used right now. Will remove if not used later.
 """
 from population_member import Population_Member
 
@@ -15,6 +17,7 @@ def dominates(member, other):
     if member.get_fitness() >= other.get_fitness() and member.get_wall_fitness() <= other.get_wall_fitness() and member.get_shine_fitness() <= other.get_shine_fitness():
         if member.get_fitness() > other.get_fitness() or member.get_wall_fitness() < other.get_wall_fitness() or member.get_shine_fitness() < other.get_shine_fitness():
             return True
+        return False
     return False
 
 """

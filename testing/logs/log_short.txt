@@ -20,7 +20,7 @@ Mutation Rate: 0.25
 Insert Mutation Rate: 0.25
 Evaluations Until Termination: 10000
 Termination Convergence Criterion: 5000
-Repair Function: yes
+Repair Function: no
 Results Log
 
 Run 1

@@ -108,7 +108,9 @@ def main():
 
         test_inst = evolution.Evolution_Instance(puzzle)
         print("Testing. Population Size {}".format(len(test_inst.population)))
-        test_inst.dom_table.print_table_info()
+        #test_inst.dom_table.print_table_info()
+        test_inst.update_dom_levels()
+        test_inst.print_dom_levels()
 
 
         #-------TESTING-----------

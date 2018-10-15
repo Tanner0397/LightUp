@@ -192,10 +192,16 @@ class Population_Member:
     Equality and Inequality operators defined based off of fitness of population member
     """
     def __eq__(self, other):
-        return self.fitness == other.fitness
+        if(self.fitness == other.fitness and self.shine_fitness == other.shine_fitness and self.wall_fitness == other.wall_fitness):
+            return True
+        else:
+            return False
 
     def __ne__(self, other):
-        return self.fitness != other.fitness
+        if(self.fitness != other.fitness or self.shine_fitness != other.shine_fitness or self.wall_fitness != other.wall_fitness):
+            return True
+        else:
+            return False
 
     def __lt__(self, other):
         return self.fitness < other.fitness

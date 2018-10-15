@@ -13,6 +13,7 @@ import solver
 from chromosome import chromosome
 from population_member import Population_Member
 from domination_table import domination_table
+from domination_table import dominates
 
 config = configparser.ConfigParser()
 
@@ -20,6 +21,23 @@ if(len(sys.argv) >= 2):
     config.read(sys.argv[1]) #Use another config file
 else:
     config.read("configs/default.cfg")
+
+"""
+Parmeters: Population_Member, list of population members
+return: Boolean
+This fucntion determines if member is dominated by anyone in the level passed
+"""
+def contains_dominate_member(member, list_of_level):
+    #If the level is empty, this it is obviosuly not dominated
+    if len(list_of_level) == 0:
+        return False
+    else:
+        for members_in_level in list_of_level:
+            #This member is dominated by somone in the level
+            if dominates(members_in_level, member) == True:
+                return True
+        #Member was not dominated by anyone in this level, so lets return False
+        return False
 
 """
 Object for E.A.
@@ -45,7 +63,8 @@ class Evolution_Instance:
             self.population.append(Population_Member(puzzle_copy))
 
         #Create domination table after the inital population is already created
-        self.dom_table = domination_table(self.population)
+        #self.dom_table = domination_table(self.population)
+        self.dom_levels = [];
 
     """
     Paramters: (tuple, chromosome) where tuple is a mutated gene in chromosome
@@ -472,3 +491,34 @@ class Evolution_Instance:
     """
     def set_population(self, pop):
         self.population = pop
+
+
+    def insert_into_dom_level(self, member):
+        for i in range(len(self.dom_levels)):
+            #If the member is not dominated by anyone in the level, place it there.
+            if contains_dominate_member(member, self.dom_levels[i]) == False:
+                self.dom_levels[i].append(member);
+                #Now that the member is in the level, there might be people in the level that are cdominated by the new member
+                for check_members in self.dom_levels[i][:]:
+                    #Check each one if it dominated by this new member
+                    if dominates(member, check_members):
+                        #If this one is dominated, remove it from the dom_level and insert it somewhere else
+                        self.dom_levels[i].remove(check_members)
+                        self.insert_into_dom_level(check_members)
+                return;
+        #If we're here then we were dominated by everyone thus far, so we create a new level with its only intry being the member
+        self.dom_levels.append([member])
+
+
+    def update_dom_levels(self):
+        #clear out the sdom levels
+        self.dom_levels.clear()
+        for member in self.population:
+            self.insert_into_dom_level(member)
+        print("Dom levels: {}".format(len(self.dom_levels)))
+
+
+    def print_dom_levels(self):
+        for i in range(len(self.dom_levels)):
+            for member in self.dom_levels[i]:
+                print("Level {} - Fitness: {}, Shine: {}, Wall: {}".format(i, member.fitness, member.shine_fitness, member.wall_fitness))
