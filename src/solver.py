@@ -139,8 +139,13 @@ def evolution_algorithm(puzzle):
 
     #intital logging
     average_fitness = EA_instance.average_population_fitness()
+    average_shine_fitness = EA_instance.average_populaion_shine_fitness()
+    average_wall_fitness = EA_instance.average_populaion_wall_fitness()
+
     best_fitness = EA_instance.best_fitness_in_population()
-    solution_logger.new_entry(population_size, average_fitness, best_fitness)
+    best_shine_fitness = EA_instance.best_shine_fitness_in_population()
+    best_wall_fitness = EA_instance.best_wall_fitness_in_populaiton()
+    solution_logger.new_entry(population_size, average_fitness, average_shine_fitness, average_wall_fitness, best_fitness, best_shine_fitness, best_wall_fitness)
 
     #offset by lambda
     for current_eval in range(population_size+new_children, evals+new_children, new_children):
@@ -202,9 +207,14 @@ def evolution_algorithm(puzzle):
         if current_eval > evals:
             break
         average_fitness = EA_instance.average_population_fitness()
-        best_fitness = EA_instance.best_fitness_in_population()
+        average_shine_fitness = EA_instance.average_populaion_shine_fitness()
+        average_wall_fitness = EA_instance.average_populaion_wall_fitness()
 
-        solution_logger.new_entry(current_eval, average_fitness, best_fitness)
+        best_fitness = EA_instance.best_fitness_in_population()
+        best_shine_fitness = EA_instance.best_shine_fitness_in_population()
+        best_wall_fitness = EA_instance.best_wall_fitness_in_populaiton()
+
+        solution_logger.new_entry(current_eval, average_fitness, average_shine_fitness, average_wall_fitness, best_fitness, best_shine_fitness, best_wall_fitness)
 
 
         #Check termination conditions
@@ -231,5 +241,5 @@ def evolution_algorithm(puzzle):
         #reassign
         last_average_fitness = average_fitness
 
-    best_solution = EA_instance.get_best_population_member()
-    return best_solution.puzzle
+    best_solutions = EA_instance.get_best_population_members()
+    return best_solutions

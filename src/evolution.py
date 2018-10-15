@@ -13,7 +13,7 @@ import solver
 from chromosome import chromosome
 from population_member import Population_Member
 from domination_table import domination_table
-from domination_table import dominates
+#rom domination_table import dominates
 
 config = configparser.ConfigParser()
 
@@ -40,6 +40,44 @@ def contains_dominate_member(member, list_of_level):
         return False
 
 """
+Paramters: population member, population member
+Return: Boolean
+This function determines to see of member dominates over other
+"""
+def dominates(member, other):
+    if member.get_fitness() >= other.get_fitness() and member.get_wall_fitness() <= other.get_wall_fitness() and member.get_shine_fitness() <= other.get_shine_fitness():
+        if member.get_fitness() > other.get_fitness() or member.get_wall_fitness() < other.get_wall_fitness() or member.get_shine_fitness() < other.get_shine_fitness():
+            return True
+        return False
+    return False
+
+
+def insert_into_dom_level(member, levels):
+    for i in range(len(levels)):
+        #If the member is not dominated by anyone in the level, place it there.
+        if contains_dominate_member(member, levels[i]) == False:
+            member.set_domination_rank(i)
+            levels[i].append(member)
+            #Now that the member is in the level, there might be people in the level that are cdominated by the new member
+            for check_members in levels[i][:]:
+                #Check each one if it dominated by this new member
+                if dominates(member, check_members):
+                    #If this one is dominated, remove it from the dom_level and insert it somewhere else
+                    levels[i].remove(check_members)
+                    insert_into_dom_level(check_members, levels)
+            return
+    #If we're here then we were dominated by everyone thus far, so we create a new level with its only intry being the member
+    levels.append([member])
+
+
+def sort_by_domination(domination_levels):
+        new_population = []
+        for i in range(len(domination_levels)):
+            for member in domination_levels[i]:
+                new_population.append(member)
+        return new_population
+
+"""
 Object for E.A.
 """
 class Evolution_Instance:
@@ -64,7 +102,9 @@ class Evolution_Instance:
 
         #Create domination table after the inital population is already created
         #self.dom_table = domination_table(self.population)
-        self.dom_levels = [];
+        self.dom_levels = []
+        self.num_levels = 0
+        self.update_dom_levels()
 
     """
     Paramters: (tuple, chromosome) where tuple is a mutated gene in chromosome
@@ -102,6 +142,16 @@ class Evolution_Instance:
         average = value/len(self.population)
         return average
 
+    def average_populaion_shine_fitness(self):
+        value = sum(member.get_shine_fitness() for member in self.population)
+        average = value/len(self.population)
+        return average
+
+    def average_populaion_wall_fitness(self):
+        value = sum(member.get_wall_fitness() for member in self.population)
+        average = value/len(self.population)
+        return average
+
     """
     Paramaters: None
     Return: Integer
@@ -110,22 +160,25 @@ class Evolution_Instance:
     def best_fitness_in_population(self):
         return max(member.get_fitness() for member in self.population)
 
+    def best_shine_fitness_in_population(self):
+        return min(member.get_shine_fitness() for member in self.population)
+
+    def best_wall_fitness_in_populaiton(self):
+        return min(member.get_wall_fitness() for member in self.population)
+
     """
     Paramaters: None
     Return: Population_Member
-    This function simply returns the best member of the populaiton
+    This function will return the best level of the front
     """
-    def get_best_population_member(self):
-        best_member = self.population[0]
-        for member in self.population:
-            if best_member.get_fitness() <= member.get_fitness():
-                best_member = member
-        return best_member
+    def get_best_population_members(self):
+        best_memebrs = self.dom_levels[0]
+        return best_members
 
     """
     Paramters: None
     return: Population_Member
-    This function returns a parent, and winner is chosed in a k tournament style
+    This function returns a parent, and winner is chosed in a k tournament style. Uses domination rank.
     """
     def parent_tournament(self):
         try:
@@ -137,12 +190,15 @@ class Evolution_Instance:
             sys.exit()
         tourny_list = random.sample(self.population, k)
         best_entry = tourny_list[0]
-        best_entry_fitness = best_entry.get_fitness()
+        #Having a lower domination is the best, so this is a minimization problem
+        #But wer know how many leves we have so taking the number of levels and subtracting it by
+        #The domination rank makes this a maximzing problem and less has to change.
+        best_entry_non_domination_rank = self.num_levels - best_entry.get_domination_rank()
         for i in range(k):
-            current_fitness = tourny_list[i].get_fitness()
-            if current_fitness > best_entry_fitness:
+            current_non_domination_rank = self.num_levels - tourny_list[i].get_domination_rank()
+            if current_non_domination_rank > best_entry_non_domination_rank:
                 best_entry = tourny_list[i]
-                best_entry_fitness = current_fitness
+                best_entry_non_domination_rank = current_non_domination_rank
         return best_entry
 
     """
@@ -151,14 +207,15 @@ class Evolution_Instance:
     This function returns a parent, and winner is chosed by a weighted choice based off of fitness
     """
     def parent_fitness_proportional_selection(self):
-        max = sum([member.get_fitness() for member in self.population])
+        #Use num_levels - domination rank for this
+        max = sum([self.num_levels - member.get_domination_rank() for member in self.population])
         #fixed point on "roulette wheel"
         choose_point = random.uniform(0, max)
         current = 0
         #Scramble population listing so that the first member of the population isn't chosen everytime, this is an issue when all the fitness scores are 0 (the very beginning)
         self.population = sorted(self.population, key = lambda x: random.random())
         for member in self.population:
-            current += member.fitness
+            current += self.num_levels - member.get_domination_rank()
             if current >= choose_point:
                 return member
 
@@ -203,10 +260,16 @@ class Evolution_Instance:
         if k > len(self.population):
             print("Error: k is larger then the current population. EA is killing more population members than producing. \nPlease Adjust the tournemnt size for survival in the config so the population is stable. Exiting")
             sys.exit()
-        tourny_list = random.sample(self.population, k)
-        sorted_tourny = sorted(tourny_list)
-        winner = sorted_tourny[-1]
-        losers = sorted_tourny[:-1]
+        tourny_participants = random.sample(self.population, k)
+        #Create local domination table and use that
+        local_domination_table = []
+        participants_by_domination = []
+        for member in tourny_participants:
+            insert_into_dom_level(member, local_domination_table)
+        #Sort in ascending order of non domination, reverse the list
+        participants_by_domination = sort_by_domination(local_domination_table)[::1]
+        winner = participants_by_domination[-1]
+        losers = participants_by_domination[:-1]
         for loser in losers:
             self.population.remove(loser)
 
@@ -219,7 +282,7 @@ class Evolution_Instance:
         #Try and not give positional bias in the population by keeping order
         members_to_remove = len(self.population)-self.population_size
          #Sorted in ascending order
-        sorted_population = sorted(self.population)
+        sorted_population = sort_by_domination(self.dom_levels)[::-1]
         #These are the members to remove
         unfit_members = sorted_population[0:members_to_remove]
          #kill of all the unfit members
@@ -248,13 +311,14 @@ class Evolution_Instance:
         #move this out here for speedup, removes linear search from a linear search
         for i in range(self.population_size):
             #fixed point on "roulette wheel"
-            max = sum([member.get_fitness() for member in population_copy])
+            #Same as parent, use domination rank
+            max = sum([self.num_levels - member.get_domination_rank() for member in population_copy])
             choose_point = random.uniform(0, max)
             current = 0
             #Scramble population listing so that the first member of the population isn't chosen everytime, this is an issue when all the fitness scores are 0 (the very beginning)
             population_copy = sorted(population_copy, key = lambda x: random.random())
             for member in population_copy:
-                current += member.get_fitness()
+                current += self.num_levels - member.get_domination_rank()
                 if current >= choose_point:
                     surviving_members.append(copy.deepcopy(member))
                     population_copy.remove(member)
@@ -492,32 +556,15 @@ class Evolution_Instance:
     def set_population(self, pop):
         self.population = pop
 
-
-    def insert_into_dom_level(self, member):
-        for i in range(len(self.dom_levels)):
-            #If the member is not dominated by anyone in the level, place it there.
-            if contains_dominate_member(member, self.dom_levels[i]) == False:
-                self.dom_levels[i].append(member);
-                #Now that the member is in the level, there might be people in the level that are cdominated by the new member
-                for check_members in self.dom_levels[i][:]:
-                    #Check each one if it dominated by this new member
-                    if dominates(member, check_members):
-                        #If this one is dominated, remove it from the dom_level and insert it somewhere else
-                        self.dom_levels[i].remove(check_members)
-                        self.insert_into_dom_level(check_members)
-                return;
-        #If we're here then we were dominated by everyone thus far, so we create a new level with its only intry being the member
-        self.dom_levels.append([member])
-
-
     def update_dom_levels(self):
         #clear out the sdom levels
         self.dom_levels.clear()
         for member in self.population:
-            self.insert_into_dom_level(member)
+            insert_into_dom_level(member, self.dom_levels)
+        self.num_levels = len(self.dom_levels)
         print("Dom levels: {}".format(len(self.dom_levels)))
 
-
+    #used for testing to see domination levels are generated correctly
     def print_dom_levels(self):
         for i in range(len(self.dom_levels)):
             for member in self.dom_levels[i]:

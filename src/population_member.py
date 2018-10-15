@@ -46,6 +46,7 @@ class Population_Member:
         self.fitness = 0
         self.shine_fitness = 0
         self.wall_fitness = 0
+        self.domination_rank = 0
         self.puzzle = puzzle
         #We are an initial population member so we must solve the puzzle using Random search
         if chromo is None:
@@ -124,7 +125,7 @@ class Population_Member:
     """
     Parameters: None
     Return: Interger Fitness
-    This function will return the fitness of this Population member.
+    These functions will return the fitness of their repectful groups.
     """
     def get_fitness(self):
         return self.fitness
@@ -150,6 +151,12 @@ class Population_Member:
         self.puzzle.set_bulb(panel)
         #Reevaluate fitness
         self.evaluate_fitness()
+
+    def set_domination_rank(self, rank):
+        self.domination_rank = rank
+
+    def get_domination_rank(self):
+        return self.domination_rank
 
     """
     Function for testing and visualizing chromsomes

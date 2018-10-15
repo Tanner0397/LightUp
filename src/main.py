@@ -109,9 +109,9 @@ def main():
         test_inst = evolution.Evolution_Instance(puzzle)
         print("Testing. Population Size {}".format(len(test_inst.population)))
         #test_inst.dom_table.print_table_info()
-        test_inst.update_dom_levels()
-        test_inst.print_dom_levels()
-
+        #test_inst.print_dom_levels()
+        test_parent = test_inst.parent_fitness_proportional_selection()
+        print("Parent Info. Fitness = {}, Shine = {}, Wall = {}, Dom Rank = {}".format(test_parent.get_fitness(), test_parent.get_shine_fitness(), test_parent.get_wall_fitness(), test_parent.get_domination_rank()))
 
         #-------TESTING-----------
         #-----------END TESTING--------

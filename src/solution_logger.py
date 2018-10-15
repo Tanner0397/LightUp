@@ -75,7 +75,9 @@ Paramtes: (evals, fitness) where eval and fitness are both integers
 Return: none
 This function simply writes to the log the current evaluation in the run with the fitness value passes
 """
-def new_entry(evals, average_fitness, best_fitness):
+def new_entry(evals, average_fitness, average_shine_fitness, average_wall_fitness, best_fitness, shine_fitness, best_wall_fitness):
     log_file_name = config.get('PATHS', 'log_path')
     with open(log_file_name, 'a') as file:
-        file.write(str(evals) + '\t' + str(average_fitness) + "\t" + str(best_fitness) + '\n')
+        file.write(str(evals) + '\t' + str(average_fitness) + "\t" + str(best_fitness) +
+        "\t" + str(average_shine_fitness) + "\t" + str(best_shine_fitness) + "\t" +
+        str(average_wall_fitness) + "\t" + str(best_wall_fitness) + '\n')
