@@ -9,6 +9,7 @@ import random
 import sys
 import configparser
 import solution_logger
+import copy
 from evolution import Evolution_Instance
 from population_member import Population_Member
 from chromosome import chromosome
@@ -130,7 +131,9 @@ def evolution_algorithm(puzzle):
     #Since creating children count an evaluation.
     #Number for convergence criterion
     evals_without_change = 0
-    last_average_fitness = EA_instance.average_population_fitness() #Starting best fitness
+    #last_average_fitness = EA_instance.average_population_fitness() #Starting best fitness
+    #use a copy of it because this will change
+    best_patero_front = copy.deepcopy(EA_instance.get_best_population_members())
 
     if plus_survival == False and population_size > new_children:
         print("Error. The size of the population is greater than the number of children produced while comma survival is selected.")
@@ -220,13 +223,30 @@ def evolution_algorithm(puzzle):
         solution_logger.new_entry(current_eval, average_fitness, average_shine_fitness, average_wall_fitness, best_fitness, best_shine_fitness, best_wall_fitness)
 
 
+        current_best_patero_front = EA_instance.get_best_population_members()
         #Check termination conditions
         #Attempt to use convergence termination
         try:
             if config.get("EA_PARAMATERS", "convergence_termination") == 'yes':
-                #No change in fitness
-                if last_average_fitness == average_fitness:
-                    evals_without_change += new_children
+                #If the lengths are the same, then we need to check if members have been changed.
+                if len(current_best_patero_front) == len(best_patero_front):
+                    #Boolean to indicate if we have an equal front
+                    found_all = True
+                    #They might not be in the same order, so we need to do an n*m search n = len(current) and m = len(best)
+                    for best in best_patero_front:
+                        #Boolean to indicate we have found the member 'best' in current_best_patero_front
+                        found = False
+                        for current in current_best_patero_front:
+                            if best == current:
+                                found = True
+                        #This particular member 'best' was not in teh current. Thus the fronts are not equal
+                        if found == False:
+                            found_all = False
+                    #This is the same patero front, thus we add a counter to the convergence.
+                    if found_all:
+                        evals_without_change += new_children
+                    else:
+                        evals_without_change = 0
                 else:
                     #Change in fitness, so restart counter
                     evals_without_change = 0
@@ -241,8 +261,8 @@ def evolution_algorithm(puzzle):
             print("Error. convergence_termination option uder EA_PARAMATERS is missing from the config file. Exiting.")
             sys.exit()
 
-        #reassign
-        last_average_fitness = average_fitness
+        #reassign - use copy because it will change
+        best_patero_front = copy.deepcopy(current_best_patero_front)
 
     best_solutions = EA_instance.get_best_population_members()
     return best_solutions
