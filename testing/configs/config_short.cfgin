@@ -13,7 +13,7 @@ cols = 10
 #Base percentage of panels that are walls. Number of walls may be slightly higher in order to guarantee solvability
 wall_percent = 25
 #If the seed is empty, program will generate map based off of time. Only use floating point numbers.
-seed = 0.04555407180196336
+seed = 0.8245933577846891
 
 [PATHS]
 #Paths should be relative to where run.sh is located, so the root of the project folder
@@ -45,7 +45,7 @@ survival_selection = k_tourn
 survival_strategy = plus
 
 #valid values for parent_selction are "random", "fitness_prop", and "k_tourn"
-parent_selection = fitness_prop
+parent_selection = k_tourn
 
 convergence_termination = yes
 
@@ -55,10 +55,10 @@ n_point_crossover = yes
 n_points = 2
 
 mu = 100
-lambda = 25
+lambda = 50
 
-tournament_size_parent = 3
-tournament_size_survival = 26
+tournament_size_parent = 15
+tournament_size_survival = 15
 
 #mutation rate is a floating point number
 mutation_rate = 0.25
@@ -68,4 +68,4 @@ evals_until_term = 10000
 termination_convergence_criterion = 5000
 
 #Use repair function
-repair_function = no
+repair_function = yes

@@ -1,4 +1,4 @@
-Seed: 0.04555407180196336
+Seed: 0.8245933577846891
 Rows: 12
 Cols: 10
 Wall Percent: 25
@@ -8,19 +8,22 @@ Penalty Function: yes
 Penalty Coefficient: 2.3
 Survival Stategy: plus
 Survival Selection: k_tourn
-Parent Selection: fitness_prop
+Parent Selection: k_tourn
 Convergence Termination: yes
 n Point Crossover: yes
 n Points: 2
 mu: 100
-lambda: 25
-Parent Tournament Size: 3
-Survival Tournament Size: 26
+lambda: 50
+Parent Tournament Size: 15
+Survival Tournament Size: 15
 Mutation Rate: 0.25
 Insert Mutation Rate: 0.25
 Evaluations Until Termination: 10000
 Termination Convergence Criterion: 5000
-Repair Function: no
+Repair Function: yes
 Results Log
 
 Run 1
+100 	 15.670 	 43 	 6.660 	 0 	 7.770 	 5 
+150 	 26.770 	 69 	 3.220 	 0 	 7.310 	 5 
+200 	 35.280 	 76 	 2.030 	 0 	 7.020 	 5 
