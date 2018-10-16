@@ -1,4 +1,4 @@
 backups/
 __pycache__/
+build/
 soln_image*.txt
-

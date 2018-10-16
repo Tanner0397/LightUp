@@ -175,6 +175,7 @@ def evolution_algorithm(puzzle):
 
                 #Finally add them to the population
                 EA_instance.add_new_member(new_child)
+                #EA_instance.update_dom_levels()
         #Comma survival, all the population will be terminated and replaced by all the children. Then populaiton will be weeded out to mu members again. (When doing the normal survival)
         else:
             new_population = []
@@ -199,9 +200,11 @@ def evolution_algorithm(puzzle):
             #clear old population
             EA_instance.clear_population()
             EA_instance.set_population(new_population)
+            #EA_instance.update_dom_levels()
 
         #Now that a new generation has been made, we must now dtermine which solutions get to survive
         EA_instance.population_survival()
+        EA_instance.update_dom_levels()
 
         #Stop the loop, we have over stepped. This is only a problem when the number of generations doe snot fit well with the number of total evaluations
         if current_eval > evals:

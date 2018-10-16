@@ -17,6 +17,10 @@ import evolution
 from datetime import datetime
 from evolution import Evolution_Instance
 from population_member import Population_Member
+from evolution import dominates
+
+from distutils.core import setup
+from Cython.Build import cythonize
 
 #Set up config file
 config = configparser.ConfigParser()
@@ -30,6 +34,9 @@ else:
 """
 Main Method.
 """
+def test_fx():
+  print("test")
+
 def main():
     #intialize seed, used later for log when showing time based seed.
     seed = 0
@@ -65,8 +72,8 @@ def main():
     except configparser.Error:
         print("Error: evals field under [STATISTICS] is missing from config file. Exiting.")
         sys.exit()
-    #Storage for the best fitness level, throughout all runs. All puzzle have the same number of white panels
-    best_fitness = -1
+    #Storage of patero front
+    best_patero_front = []
 
     for run_id in range(runs):
         print("Startin Run " + str(run_id+1))
@@ -96,22 +103,50 @@ def main():
             sys.exit()
 
         #---------ENDING PUZZLE GENERATION/READING--------------
+        """
+         The solution file should consist of the best Pareto front found in any run, where we count Pareto front
+         P1 as better than Pareto front P2 if the proportion of solutions in P1 which dominate at least on solution in P2 is larger than the proportion of solutions in
+         P2 which dominate at least one solution in P1.
+        """
         #---------START SOLVING PUZZLE FOR THIS RUN------------
-        # best_member = solver.evolution_algorithm(puzzle)
-        # current_fitness = best_member.verify_solution()
-        # #Store the solution
-        # if current_fitness > best_fitness:
-        #     solution_writer.write_solution(best_member)
-        #     best_fitness = current_fitness
+        current_patero_front = solver.evolution_algorithm(puzzle)
+        #Store the solution
+        if len(best_patero_front) != 0:
+            #The number of of solutions in current that dominate at least 1 solution in the best patero front
+            num_current_dominates = 0
+            #The number of solutions in the best found patero front that dominate at least 1 solution in the cuurrent patero front
+            num_best_dominates = 0
+            #Create the nu
+            for current_member in current_patero_front:
+                for best_member in best_patero_front:
+                    #If the member in the currente patero front is better than a solution found this far, increse counter
+                    if dominates(current_member, best_member):
+                        num_current_dominates+=1
+                        break
+                for best_member in best_patero_front:
+                    for current_member in current_patero_front:
+                        #if the member in the best sounf thus far is better than a soltion in the current parero front, increse counter
+                        if dominates(best_member, current_member):
+                            num_best_dominates+=1
+                            break
+            current_proportion = num_current_dominates/len(current_patero_front)
+            best_proportion = num_current_dominates/len(best_patero_front)
+            if(current_proportion > best_proportion):
+                best_patero_front = current_patero_front
+                solution_writer.write_solution(best_patero_front)
+
+        else:
+            best_patero_front = current_patero_front
+            solution_writer.write_solution(best_patero_front)
         #---------END SOLVING-----------------------
 
 
-        test_inst = evolution.Evolution_Instance(puzzle)
-        print("Testing. Population Size {}".format(len(test_inst.population)))
-        #test_inst.dom_table.print_table_info()
-        #test_inst.print_dom_levels()
-        test_parent = test_inst.parent_fitness_proportional_selection()
-        print("Parent Info. Fitness = {}, Shine = {}, Wall = {}, Dom Rank = {}".format(test_parent.get_fitness(), test_parent.get_shine_fitness(), test_parent.get_wall_fitness(), test_parent.get_domination_rank()))
+        # test_inst = evolution.Evolution_Instance(puzzle)
+        # print("Testing. Population Size {}".format(len(test_inst.population)))
+        # #test_inst.dom_table.print_table_info()
+        # #test_inst.print_dom_levels()
+        # test_parent = test_inst.parent_fitness_proportional_selection()
+        # print("Parent Info. Fitness = {}, Shine = {}, Wall = {}, Dom Rank = {}".format(test_parent.get_fitness(), test_parent.get_shine_fitness(), test_parent.get_wall_fitness(), test_parent.get_domination_rank()))
 
         #-------TESTING-----------
         #-----------END TESTING--------

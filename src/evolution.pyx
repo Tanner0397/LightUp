@@ -27,7 +27,7 @@ Parmeters: Population_Member, list of population members
 return: Boolean
 This fucntion determines if member is dominated by anyone in the level passed
 """
-def contains_dominate_member(member, list_of_level):
+cdef contains_dominate_member(member, list_of_level):
     #If the level is empty, this it is obviosuly not dominated
     if len(list_of_level) == 0:
         return False
@@ -172,7 +172,7 @@ class Evolution_Instance:
     This function will return the best level of the front
     """
     def get_best_population_members(self):
-        best_memebrs = self.dom_levels[0]
+        best_members = self.dom_levels[0]
         return best_members
 
     """
@@ -263,15 +263,41 @@ class Evolution_Instance:
         tourny_participants = random.sample(self.population, k)
         #Create local domination table and use that
         local_domination_table = []
-        participants_by_domination = []
         for member in tourny_participants:
             insert_into_dom_level(member, local_domination_table)
         #Sort in ascending order of non domination, reverse the list
-        participants_by_domination = sort_by_domination(local_domination_table)[::1]
-        winner = participants_by_domination[-1]
-        losers = participants_by_domination[:-1]
-        for loser in losers:
-            self.population.remove(loser)
+        potential_winners = local_domination_table[0];
+        random_winner = random.choice(potential_winners)
+        for member in tourny_participants:
+            if member != random_winner:
+              self.population.remove(member)
+
+    def survival_tournament_choose_to_die(self):
+        while(len(self.population) != self.population_size):
+            try:
+                k = int(config.get("EA_PARAMATERS", "tournament_size_survival"))
+            except configparser.Error:
+              print("Error: tournament_size_survival option under EA_PARAMATERS is missing from config file. Exiting")
+            if k > len(self.population):
+                print("Error: k is larger then the current population. EA is killing more population members than producing. \nPlease Adjust the tournemnt size for survival in the config so the population is stable. Exiting")
+                sys.exit()
+            tourny_participants = random.sample(self.population, k)
+
+            #Create local domination table and use that
+            local_domination_table = []
+            for member in tourny_participants:
+                insert_into_dom_level(member, local_domination_table)
+            #List if the most dominated solutions
+            potential_losers = local_domination_table[-1];
+            random_loser = random.choice(potential_losers)
+            #print(random_loser.get_fitness())
+            #self.population.remove(random_loser)
+            for i in range(len(self.population)):
+              if self.population[i] == random_loser:
+                del self.population[i]
+                break
+
+
 
     """
     Paramates: None
@@ -286,8 +312,11 @@ class Evolution_Instance:
         #These are the members to remove
         unfit_members = sorted_population[0:members_to_remove]
          #kill of all the unfit members
-        for i in range(members_to_remove):
-            self.population.remove(unfit_members[i])
+        for i in range(len(unfit_members)):
+            for j in range(len(self.population)):
+                if unfit_members[i] == self.population[j]:
+                    del self.population[j]
+                    break
 
     """
     Parameters: None
@@ -337,7 +366,7 @@ class Evolution_Instance:
             if config.get("EA_PARAMATERS", "survival_selection") == 'trun':
                 self.truncate_population()
             elif config.get("EA_PARAMATERS", "survival_selection") == "k_tourn":
-                self.survival_tournament()
+                self.survival_tournament_choose_to_die()
             elif config.get("EA_PARAMATERS", "survival_selection") == "fitness_prop":
                 self.survival_fitness_proportional_selection()
             elif config.get("EA_PARAMATERS", "survival_selection") == "random":
@@ -539,6 +568,7 @@ class Evolution_Instance:
 
     def add_new_member(self, member):
         self.population.append(member)
+        insert_into_dom_level(member, self.dom_levels)
 
     """
     Parameters: none
@@ -562,7 +592,6 @@ class Evolution_Instance:
         for member in self.population:
             insert_into_dom_level(member, self.dom_levels)
         self.num_levels = len(self.dom_levels)
-        print("Dom levels: {}".format(len(self.dom_levels)))
 
     #used for testing to see domination levels are generated correctly
     def print_dom_levels(self):
