@@ -29,6 +29,7 @@ class Light_puzzle:
     game informations such as if the panel is a wall or not is stored in the panel object. There are get functions inplace to obtain lists of
     panel objects such as obtaiing all unlit panels, obtaining all panels that have bulbs places at them, etc...
     """
+
     def __init__(self, rows, cols):
         self.rows = rows
         self.cols = cols
@@ -46,13 +47,19 @@ class Light_puzzle:
     def get_panel(self, row, col):
         return self.map[row][col]
 
+    def get_rows(self):
+        return self.rows
+
+    def get_cols(self):
+        return self.cols
+
     """
     Parameters: (panel, value) where panel is a panel object in the map, and value is an integer.
     Return: none
     This function turns the panel passed into the function that is located in the map into a wall, with the wall value set as the parameter value
     """
     def set_wall(self, panel, value):
-        if(panel.wall == False):
+        if(panel.is_wall() == False):
             self.walls += 1
         panel.set_wall() #Set this coordinate to a wall
         panel.set_wall_value(value) #Set that walls value
@@ -63,7 +70,7 @@ class Light_puzzle:
     This fucntion simply returns True if the panel seltected is a wall, other wise it is not a wall
     """
     def is_wall(self, panel):
-        if panel.wall == True:
+        if panel.is_wall() == True:
             return True
         else:
             return False
@@ -74,7 +81,10 @@ class Light_puzzle:
     This function simply returns the wall value of the panel
     """
     def get_wall_value(self, panel):
-        return panel.wall_value
+        return panel.wall_value()
+
+    def get_num_walls(self):
+        return self.walls
 
     """
     Parameters: (panel) where panel is a panel object that is in map.
@@ -84,12 +94,12 @@ class Light_puzzle:
     """
     def set_bulb(self, panel):
         self.bulb_panels.append(panel);
-        row = panel.row
-        col = panel.col
-        if(self.map[row][col].bulb == False):
-            self.map[row][col].lit = True #The panels with bulbs are lit
-            self.map[row][col].bulb = True #This panel is now a bulb
-            self.map[row][col].lit_value+=1
+        row = panel.get_row()
+        col = panel.get_col()
+        if(self.map[row][col].is_bulb() == False):
+            self.map[row][col].light() #The panels with bulbs are lit
+            self.map[row][col].set_bulb() #This panel is now a bulb
+            self.map[row][col].inc_lit_value()
             #If the length is zero, don't remove a white panel since the program is still
             #generating the puzzle map. This list has elements in it when the puzzle is done generating
             try:
@@ -105,10 +115,10 @@ class Light_puzzle:
 
             #light squares going to the right of the bulb first
             for i in range(col, self.cols):
-                if(self.map[row][i].wall == False):
+                if(self.map[row][i].is_wall() == False):
                     if self.map[row][i] != panel:
-                        self.map[row][i].lit = True
-                        self.map[row][i].lit_value+=1
+                        self.map[row][i].light()
+                        self.map[row][i].inc_lit_value()
                         if len(self.unlit_panels) != 0:
                             try:
                                 self.unlit_panels.remove(self.map[row][i])
@@ -120,10 +130,10 @@ class Light_puzzle:
 
             #light panels to the left of the bulb, go backwards. range function is exclusive so to have 0 -1 needs to be the stoppping param
             for i in range(col, -1, -1):
-                if(self.map[row][i].wall == False):
+                if(self.map[row][i].is_wall() == False):
                     if self.map[row][i] != panel:
-                        self.map[row][i].lit = True
-                        self.map[row][i].lit_value+=1
+                        self.map[row][i].light()
+                        self.map[row][i].inc_lit_value()
                         if len(self.unlit_panels) != 0:
                             try:
                                 self.unlit_panels.remove(self.map[row][i])
@@ -133,10 +143,10 @@ class Light_puzzle:
                     break;
 
             for j in range(row, self.rows): #lights above above the bulb
-                if(self.map[j][col].wall == False):
+                if(self.map[j][col].is_wall() == False):
                     if self.map[j][col] != panel:
-                        self.map[j][col].lit = True
-                        self.map[j][col].lit_value+=1
+                        self.map[j][col].light()
+                        self.map[j][col].inc_lit_value()
                         if len(self.unlit_panels) != 0:
                             try:
                                 self.unlit_panels.remove(self.map[j][col])
@@ -146,10 +156,10 @@ class Light_puzzle:
                     break;
 
             for j in range(row, -1, -1): #lights below below the bulb
-                if(self.map[j][col].wall == False):
+                if(self.map[j][col].is_wall() == False):
                     if self.map[j][col] != panel:
-                        self.map[j][col].lit = True
-                        self.map[j][col].lit_value+=1
+                        self.map[j][col].light()
+                        self.map[j][col].inc_lit_value()
                         if len(self.unlit_panels) != 0:
                             try:
                                 self.unlit_panels.remove(self.map[j][col])
@@ -165,18 +175,18 @@ class Light_puzzle:
     This function simply retursn true of the panel passed is a bulb, otherwise return false.
     """
     def is_bulb(self, panel):
-        if panel.bulb == True:
+        if panel.is_bulb() == True:
             return True
         else:
             return False
 
     def remove_bulb(self, panel):
-        row = panel.row
-        col = panel.col
-        panel.bulb = False
-        panel.lit_value-=1
-        if panel.lit_value <= 0:
-            panel.lit = False
+        row = panel.get_row()
+        col = panel.get_col()
+        panel.remove_bulb()
+        panel.dec_lit_value()
+        if panel.get_lit_value() <= 0:
+            panel.unlight()
         #No longer a bulb
         try:
             self.bulb_panels.remove(panel);
@@ -189,49 +199,49 @@ class Light_puzzle:
         #We need to remove the bulb. If the After removing the bulb and and recrementing the lit value, if the lit value is 0 (not lit by another bulb) then the bulb is no longer lit.
         #Goto the right first
         for i in range(col, self.cols):
-            if(self.map[row][i].wall == False):
+            if(self.map[row][i].is_wall() == False):
                 #Dont count this if it is the bulb that we removed
                     if self.map[row][i] != panel:
-                        self.map[row][i].lit_value-=1
+                        self.map[row][i].dec_lit_value()
                         #If the lit value is 0, we can say the panel is no longer lit
-                        if self.map[row][i].lit_value <= 0:
-                            self.map[row][i].lit = False
+                        if self.map[row][i].get_lit_value() <= 0:
+                            self.map[row][i].unlight()
                             self.unlit_panels.append(self.map[row][i])
             else:
                 break;
         #check left
         for i in range(col, -1, -1):
-            if(self.map[row][i].wall == False):
+            if(self.map[row][i].is_wall() == False):
                 #Dont count this if it is the bulb that we removed
                 if self.map[row][i] != panel:
-                    self.map[row][i].lit_value-=1
+                    self.map[row][i].dec_lit_value()
                     #If the lit value is 0, we can say the panel is no longer lit
-                    if self.map[row][i].lit_value <= 0:
-                        self.map[row][i].lit = False
+                    if self.map[row][i].get_lit_value() <= 0:
+                        self.map[row][i].unlight()
                         self.unlit_panels.append(self.map[row][i])
             else:
                 break;
         #check up
         for j in range(row, -1, -1):
-            if(self.map[j][col].wall == False):
+            if(self.map[j][col].is_wall() == False):
                 #Dont count this if it is the bulb that we removed
                 if self.map[j][col] != panel:
-                    self.map[j][col].lit_value-=1
+                    self.map[j][col].dec_lit_value()
                     #If the lit value is 0, we can say the panel is no longer lit
-                    if self.map[j][col].lit_value <= 0:
-                        self.map[j][col].lit = False
+                    if self.map[j][col].get_lit_value() <= 0:
+                        self.map[j][col].unlight()
                         self.unlit_panels.append(self.map[j][col])
             else:
                 break;
         #finally check down
         for j in range(row, self.rows):
-            if(self.map[j][col].wall == False):
+            if(self.map[j][col].is_wall() == False):
                 #Dont count this if it is the bulb that we removed
                 if self.map[j][col] != panel:
-                    self.map[j][col].lit_value-=1
+                    self.map[j][col].dec_lit_value()
                     #If the lit value is 0, we can say the panel is no longer lit
-                    if self.map[j][col].lit_value <= 0:
-                        self.map[j][col].lit = False
+                    if self.map[j][col].get_lit_value() <= 0:
+                        self.map[j][col].unlight()
                         self.unlit_panels.append(self.map[j][col])
             else:
                 break;
@@ -249,7 +259,7 @@ class Light_puzzle:
         for j in range(self.cols):
             for i in range(self.rows):
                 #If the panel isn't a wall and isn't a bulb, it can be selected
-                if self.map[i][j].bulb == False and self.map[i][j].wall == False:
+                if self.map[i][j].is_bulb() == False and self.map[i][j].is_wall() == False:
                     self.white_panels.append(self.map[i][j]) #send in (row, col) format
 
 
@@ -267,7 +277,7 @@ class Light_puzzle:
         for j in range(self.cols):
             for i in range(self.rows):
                 #If the panel isn't a wall and isn't a bulb, it can be selected
-                if self.map[i][j].lit == False and self.map[i][j].wall == False:
+                if self.map[i][j].is_lit() == False and self.map[i][j].is_wall() == False:
                     self.unlit_panels.append(self.map[i][j])
 
 
@@ -296,7 +306,7 @@ class Light_puzzle:
         panel_list = []
         for i in range(self.rows):
             for j in range(self.cols):
-                if self.map[i][j].lit == True:
+                if self.map[i][j].is_lit() == True:
                     panel_list.append(self.map[i][j])
         return panel_list
 
@@ -316,7 +326,7 @@ class Light_puzzle:
         panel_list = []
         for j in range(self.cols):
             for i in range(self.rows):
-                if self.map[i][j].wall == True:
+                if self.map[i][j].is_wall() == True:
                     panel_list.append(self.map[i][j])
         return panel_list
 
@@ -326,8 +336,8 @@ class Light_puzzle:
     This function finds all of the neighbors (directly adjacent panels) for the panel passes, and creates a list of these panels
     """
     def get_adjacent_panels(self, panel):
-        row = panel.row
-        col = panel.col
+        row = panel.get_row()
+        col = panel.get_col()
         panel_list = []
         if row != 0:
             panel_list.append(self.map[row-1][col])
@@ -356,24 +366,24 @@ class Light_puzzle:
     This function checks to see the wall panel passed has to currect number of bulbs in the neigbor panels. Returns True if the wall is valid, but false
     if the wall is invalid
     """
-    def check_wall(self, panel):
+    def  check_wall(self, panel):
         adjacent_bulbs = 0
-        row = panel.row
-        col = panel.col
+        row = panel.get_row()
+        col = panel.get_col()
         #check to the left
-        if row != 0 and self.map[row-1][col].bulb == True:
+        if row != 0 and self.map[row-1][col].is_bulb() == True:
             adjacent_bulbs+=1
         #check to the right
-        if row != self.rows-1 and self.map[row+1][col].bulb == True:
+        if row != self.rows-1 and self.map[row+1][col].is_bulb() == True:
             adjacent_bulbs+=1
         #check below the wall
-        if col != 0 and self.map[row][col-1].bulb == True:
+        if col != 0 and self.map[row][col-1].is_bulb() == True:
             adjacent_bulbs+=1
         #check above the wall
-        if col != self.cols-1 and self.map[row][col+1].bulb == True:
+        if col != self.cols-1 and self.map[row][col+1].is_bulb() == True:
             adjacent_bulbs+=1
         #If the values are not the same, then return 0 because the solution fails
-        if adjacent_bulbs != self.map[row][col].wall_value:
+        if adjacent_bulbs != self.map[row][col].wall_value():
             return False
         return True
 
@@ -384,33 +394,33 @@ class Light_puzzle:
     and false if the bulb placement is invalid.
     """
     def check_bulb(self, panel):
-        row = panel.row
-        col = panel.col
+        row = panel.get_row()
+        col = panel.get_col()
         #light squares going to the right of the bulb first
         for i in range(col, self.cols):
             # If we run into a wall, we're done looking in this direction
-            if self.map[row][i].wall == True:
+            if self.map[row][i].is_wall() == True:
                 break
             #If we run into a bulb, return false
-            if self.map[row][i].bulb == True and self.map[row][i] != panel:
+            if self.map[row][i].is_bulb() == True and self.map[row][i] != panel:
                 return False
         #light panels to the left of the bulb, go backwards. range function is exclusive so to have 0 -1 needs to be the stoppping param
         for i in range(col, -1, -1):
-            if self.map[row][i].wall == True:
+            if self.map[row][i].is_wall() == True:
                 break
-            if self.map[row][i].bulb == True and self.map[row][i] != panel:
+            if self.map[row][i].is_bulb() == True and self.map[row][i] != panel:
                 return False
         #lights above above the bulb
         for j in range(row, -1, -1):
-            if self.map[j][col].wall == True:
+            if self.map[j][col].is_wall() == True:
                 break
-            if self.map[j][col].bulb == True and self.map[j][col] != panel:
+            if self.map[j][col].is_bulb() == True and self.map[j][col] != panel:
                 return False
         #lights below below the bulb
         for j in range(row, self.rows):
-            if self.map[j][col].wall == True:
+            if self.map[j][col].is_wall() == True:
                 break
-            if self.map[j][col].bulb == True and self.map[j][col] != panel:
+            if self.map[j][col].is_bulb() == True and self.map[j][col] != panel:
                 return False
 
         return True #This bulb does not shine on any other bulb
@@ -420,37 +430,37 @@ class Light_puzzle:
         current_shine_list = []
         for bulb in self.bulb_panels:
             #lets check to see if this bulb is shining on any other bulb
-            row = bulb.row
-            col = bulb.col
+            row = bulb.get_row()
+            col = bulb.get_col()
             #List of bulbs it shines on
             this_shines_on = []
             #First, lets look right
             for i in range(col, self.cols):
-                if self.map[row][i].wall == True:
+                if self.map[row][i].is_wall() == True:
                     break
                 #If we run into a bulb, add it to the list
-                if self.map[row][i].bulb == True and self.map[row][i] != bulb:
+                if self.map[row][i].is_bulb() == True and self.map[row][i] != bulb:
                     this_shines_on.append(self.map[row][i])
             #lets look left
             for i in range(col, -1, -1):
-                if self.map[row][i].wall == True:
+                if self.map[row][i].is_wall() == True:
                     break
                 #If we run into a bulb, add it to the list
-                if self.map[row][i].bulb == True and self.map[row][i] != bulb:
+                if self.map[row][i].is_bulb() == True and self.map[row][i] != bulb:
                     this_shines_on.append(self.map[row][i])
             #Look up
             for j in range(row, -1, -1):
-                if self.map[j][col].wall == True:
+                if self.map[j][col].is_wall() == True:
                     break
                 #If we run into a bulb, add it to the list
-                if self.map[j][col].bulb == True and self.map[j][col] != bulb:
+                if self.map[j][col].is_bulb() == True and self.map[j][col] != bulb:
                     this_shines_on.append(self.map[j][col])
             #Look down
             for j in range(row, self.rows):
-                if self.map[j][col].wall == True:
+                if self.map[j][col].is_wall() == True:
                     break
                 #If we run into a bulb, add it to the list
-                if self.map[j][col].bulb == True and self.map[j][col] != bulb:
+                if self.map[j][col].is_bulb() == True and self.map[j][col] != bulb:
                     this_shines_on.append(self.map[j][col])
 
             #Create a the shine_list object
@@ -471,10 +481,10 @@ class Light_puzzle:
         self.bulb_panels.clear() #clear the bulb list
         for i in range(self.rows):
             for j in range(self.cols):
-                if self.map[i][j].wall == False:
-                    self.map[i][j].bulb = False
-                    self.map[i][j].lit = False
-                    self.map[i][j].lit_value = 0
+                if self.map[i][j].is_wall() == False:
+                    self.map[i][j].remove_bulb()
+                    self.map[i][j].unlight()
+                    self.map[i][j].clear_lit_value()
 
     """
     Paramters: none
@@ -516,13 +526,13 @@ class Light_puzzle:
         for i in range(0, self.rows):
             for j in range(0, self.cols):
                 current_panel = self.map[i][j]
-                if current_panel.wall == False and current_panel.lit == True:
+                if current_panel.is_wall() == False and current_panel.is_lit() == True:
                     health_value+=1
                 #check if wall have the correct number of adjacent bulbs if the value isn't 5. Check the wall using check_wall()
-                if enforce_wall_value == True and current_panel.wall == True and current_panel.wall_value != DEFAULT_WALL and self.check_wall(current_panel) == False:
+                if enforce_wall_value == True and current_panel.is_wall() == True and current_panel.wall_value() != DEFAULT_WALL and self.check_wall(current_panel) == False:
                     return 0
                 #Check of this bulb shines on another bulb
-                if current_panel.bulb == True and self.check_bulb(current_panel) == False:
+                if current_panel.is_bulb() == True and self.check_bulb(current_panel) == False:
                     return 0
         return health_value
 
@@ -552,13 +562,13 @@ class Light_puzzle:
         for i in range(0, self.rows):
             for j in range(0, self.cols):
                 current_panel = self.map[i][j]
-                if current_panel.wall == False and current_panel.lit == True:
+                if current_panel.is_wall() == False and current_panel.is_lit() == True:
                     health_value+=1
                 #check if wall have the correct number of adjacent bulbs if the value isn't 5. Check the wall using check_wall().
-                if enforce_wall_value == True and current_panel.wall == True and current_panel.wall_value != DEFAULT_WALL and self.check_wall(current_panel) == False:
+                if enforce_wall_value == True and current_panel.is_wall() == True and current_panel.wall_value() != DEFAULT_WALL and self.check_wall(current_panel) == False:
                     penalty+=1
                 #Check of this bulb shines on another bulb, if so increment panalty
-                if current_panel.bulb == True and self.check_bulb(current_panel) == False:
+                if current_panel.is_bulb() == True and self.check_bulb(current_panel) == False:
                     penalty+=1
         #This could maybe be below 0, so if it is then jsut make it zero
         if health_value-penalty*penalty_coefficient > 0:
@@ -589,7 +599,7 @@ class Light_puzzle:
         for i in range(0, self.rows):
             for j in range(0, self.cols):
                 current_panel = self.map[i][j]
-                if current_panel.wall == True and current_panel.wall_value != DEFAULT_WALL and self.check_wall(current_panel) == False:
+                if current_panel.is_wall() == True and current_panel.wall_value() != DEFAULT_WALL and self.check_wall(current_panel) == False:
                     wall_violations+=1
         return wall_violations
 
@@ -610,15 +620,15 @@ class Light_puzzle:
         string = ''
         for i in range(self.rows):
             for j in range(self.cols):
-                if self.map[i][j].wall == False and self.map[i][j].bulb == False and self.map[i][j].lit == False:
+                if self.map[i][j].is_wall() == False and self.map[i][j].is_bulb() == False and self.map[i][j].is_lit() == False:
                     string += '_'
-                elif self.map[i][j].wall == False and self.map[i][j].bulb == False and self.map[i][j].lit == True:
+                elif self.map[i][j].is_wall() == False and self.map[i][j].is_bulb() == False and self.map[i][j].is_list() == True:
                     string += '+'
-                elif self.map[i][j].bulb == True:
+                elif self.map[i][j].is_bulb() == True:
                     string += 'B'
-                elif self.map[i][j].wall == True:
-                    if(self.map[i][j].wall_value < DEFAULT_WALL):
-                        string += str(self.map[i][j].wall_value)
+                elif self.map[i][j].is_wall() == True:
+                    if(self.map[i][j].wall_value() < DEFAULT_WALL):
+                        string += str(self.map[i][j].wall_value())
                     else:
                         string += 'W'
             string += '\n'

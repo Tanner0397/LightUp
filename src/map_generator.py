@@ -83,7 +83,7 @@ def generate_map():
             random_panel = puzzle.get_random_panel()
         puzzle.set_wall(random_panel, 5)
         # If we have reached our baseline number of walls, stop making more walls.
-        if puzzle.walls >= number_of_walls:
+        if puzzle.get_num_walls() >= number_of_walls:
             break
 
     #update the map so that lights don't shine past walls now
@@ -124,6 +124,6 @@ def generate_map():
     puzzle.clear_map()
     #Done generating, so greate the list of white panels
     puzzle.init_white_panel_list()
-    #Update the unlit list for the final time. 
+    #Update the unlit list for the final time.
     puzzle.init_unlit_panel_list()
     return puzzle

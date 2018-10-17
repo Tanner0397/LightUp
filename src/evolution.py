@@ -27,7 +27,7 @@ Parmeters: Population_Member, list of population members
 return: Boolean
 This fucntion determines if member is dominated by anyone in the level passed
 """
-cdef contains_dominate_member(member, list_of_level):
+def contains_dominate_member(member, list_of_level):
     #If the level is empty, this it is obviosuly not dominated
     if len(list_of_level) == 0:
         return False
@@ -81,11 +81,12 @@ def sort_by_domination(domination_levels):
 Object for E.A.
 """
 class Evolution_Instance:
+
     def __init__(self, puzzle):
 
         self.puzzle = puzzle
-        self.puzzle_instance_rows = self.puzzle.rows
-        self.puzzle_instance_cols = self.puzzle.cols
+        self.puzzle_instance_rows = self.puzzle.get_rows()
+        self.puzzle_instance_cols = self.puzzle.get_cols()
         self.population = [] #list of population
         try:
             self.population_size = int(config.get("EA_PARAMATERS", "mu"))
@@ -117,7 +118,7 @@ class Evolution_Instance:
         if row < 0 or col < 0:
             return False
          #We are within bounds and this is not a duplicate
-        if row < self.puzzle.rows and col < self.puzzle.cols and gene not in chromo:
+        if row < self.puzzle_instance_rows and col < self.puzzle_instance_cols and gene not in chromo:
             panel = self.puzzle.get_panel(row, col)
             #This is not a wall, we are valid
             if self.puzzle.is_wall(panel) == False:
@@ -174,6 +175,9 @@ class Evolution_Instance:
     def get_best_population_members(self):
         best_members = self.dom_levels[0]
         return best_members
+
+    def get_population(self):
+        return self.population
 
     """
     Paramters: None
@@ -335,6 +339,7 @@ class Evolution_Instance:
     This function will choose mu number of members to keep using a iterative fitness propertional selctionself.
     """
     def survival_fitness_proportional_selection(self):
+
         surviving_members = []
         population_copy = copy.deepcopy(self.population)
         #move this out here for speedup, removes linear search from a linear search
@@ -386,8 +391,8 @@ class Evolution_Instance:
     This creates 2 chromosomes and chooses one of them randomly based off of a coin flip.
     """
     def single_point_crossover(self, parent_1, parent_2):
-        chromosome_1 = parent_1.chromosome
-        chromosome_2 = parent_2.chromosome
+        chromosome_1 = parent_1.get_chromosome()
+        chromosome_2 = parent_2.get_chromosome()
         min_chromosome_length = min(len(chromosome_1), len(chromosome_2))
         max_chromosome_length = max(len(chromosome_1), len(chromosome_2))
         #Try and not clone chromsomes. This will only clone chromsomes of length 1
@@ -421,8 +426,8 @@ class Evolution_Instance:
 
     def n_point_crossover(self, parent_1, parent_2):
         #Make chromsomes, create copes if parents to orginal values dont change
-        chromosome_1 = copy.deepcopy(parent_1.chromosome)
-        chromosome_2 = copy.deepcopy(parent_2.chromosome)
+        chromosome_1 = copy.deepcopy(parent_1.get_chromosome())
+        chromosome_2 = copy.deepcopy(parent_2.get_chromosome())
         min_chromosome_length = min(len(chromosome_1), len(chromosome_2))
         max_chromosome_length = max(len(chromosome_1), len(chromosome_2))
         #new chromosomes

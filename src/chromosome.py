@@ -15,6 +15,7 @@ I use an OrderedSet to remove duplicate entries to avoid have redundant genes, a
 """
 class chromosome:
 
+
     """
     Chromosme constructor. No Paramaters
     """

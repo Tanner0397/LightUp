@@ -55,8 +55,8 @@ This function attempts to solve the puzzle randomly, but can use game knowledge 
 bulbs can be placed uniquly around a wall if and only of there are the same number of bulbs as the wall value
 """
 def forced_wall_validity(puzzle):
-    rows = puzzle.rows
-    cols = puzzle.cols
+    rows = puzzle.get_rows()
+    cols = puzzle.get_cols()
 
     #place bulbs where there are unique placements of bulbs beccause of wall values
     for i in range(rows):
@@ -65,9 +65,9 @@ def forced_wall_validity(puzzle):
             if puzzle.is_wall(panel) == True:
                 #get all he adjacent bulb_panels
                 adjacent_panels = puzzle.get_adjacent_panels(panel)
-                wall_val = panel.wall_value
+                wall_val = panel.wall_value()
                 #Remove all the neighbors that are walls
-                adjacent_panels[:] = [x for x in adjacent_panels if x.wall == False]
+                adjacent_panels[:] = [x for x in adjacent_panels if x.is_wall() == False]
 
                 #It can be placed uniquely
                 if len(adjacent_panels) == wall_val:
@@ -152,6 +152,7 @@ def evolution_algorithm(puzzle):
 
     #offset by lambda
     for current_eval in range(population_size+new_children, evals+new_children, new_children):
+
 
         #Now prepare the next generation
         #First prepate the next set of children, so we must choose parents

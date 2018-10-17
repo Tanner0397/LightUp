@@ -14,6 +14,7 @@ import solver
 import solution_logger
 import solution_writer
 import evolution
+import timeit
 from datetime import datetime
 from evolution import Evolution_Instance
 from population_member import Population_Member
@@ -116,7 +117,7 @@ def main():
             num_current_dominates = 0
             #The number of solutions in the best found patero front that dominate at least 1 solution in the cuurrent patero front
             num_best_dominates = 0
-            #Create the nu
+            #compute num dominates for both 
             for current_member in current_patero_front:
                 for best_member in best_patero_front:
                     #If the member in the currente patero front is better than a solution found this far, increse counter
@@ -142,10 +143,13 @@ def main():
 
 
         # test_inst = evolution.Evolution_Instance(puzzle)
-        # print("Testing. Population Size {}".format(len(test_inst.population)))
+        # print("Testing. Population Size {}".format(len(test_inst.get_population())))
         # #test_inst.dom_table.print_table_info()
         # #test_inst.print_dom_levels()
-        # test_parent = test_inst.parent_fitness_proportional_selection()
+        # start_time = timeit.default_timer()
+        # test_parent = test_inst.select_parent()
+        # end_time = timeit.default_timer()
+        # print(end_time - start_time)
         # print("Parent Info. Fitness = {}, Shine = {}, Wall = {}, Dom Rank = {}".format(test_parent.get_fitness(), test_parent.get_shine_fitness(), test_parent.get_wall_fitness(), test_parent.get_domination_rank()))
 
         #-------TESTING-----------

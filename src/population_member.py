@@ -41,6 +41,7 @@ class Population_Member:
         wall_fitness: numebr of walls that are not satisfied, minimizing
 
     """
+
     def __init__(self, puzzle, chromo=None):
         #initial fitness value
         self.fitness = 0
@@ -66,8 +67,8 @@ class Population_Member:
             #Set the max chromozome length
             self.chromosome_length = len(bulb_panels)
             for i in range(self.chromosome_length):
-                row = bulb_panels[i].row
-                col = bulb_panels[i].col
+                row = bulb_panels[i].get_row()
+                col = bulb_panels[i].get_col()
                 #index [0] is row, index [1] is col. Sent as a tuple since tuples are not mutable, and are hashable
                 self.chromosome.append(tuple([row, col]))
             self.evaluate_fitness()
@@ -100,7 +101,7 @@ class Population_Member:
         col = gene[1]
         panel = self.puzzle.get_panel(row, col)
         #Not a wall, bulb, or already lit panel
-        if panel.bulb == True or panel.wall == True or panel.lit == True:
+        if panel.is_bulb() == True or panel.is_wall() == True or panel.is_lit() == True:
             return False;
         return True
 
@@ -111,6 +112,12 @@ class Population_Member:
     """
     def get_chromosome(self):
         return self.chromosome
+
+    def get_chromosome_length(self):
+        return self.chromosome_length
+
+    def get_puzzle(self):
+        return self.puzzle
 
     """
     Parameters: None
@@ -182,7 +189,7 @@ class Population_Member:
                 #We have the bulb with the largest list now, now lets get the panel
                 bulb_to_remove = entry_to_remove.base_bulb
                 #Now, we have to made an ammendent to the chromosome, and remove this bulb that we are removing.
-                gene_to_remove = tuple([bulb_to_remove.row, bulb_to_remove.col])
+                gene_to_remove = tuple([bulb_to_remove.get_row(), bulb_to_remove.get_col()])
                 #Now let us sctually remove the bulb from the solution
                 self.puzzle.remove_bulb(bulb_to_remove)
                 #Remove the bulb from the chromosome and decrement the size of the chromosome
@@ -199,13 +206,13 @@ class Population_Member:
     Equality and Inequality operators defined based off of fitness of population member
     """
     def __eq__(self, other):
-        if(self.fitness == other.fitness and self.shine_fitness == other.shine_fitness and self.wall_fitness == other.wall_fitness):
+        if(self.get_fitness() == other.get_fitness() and self.get_shine_fitness() == other.get_shine_fitness() and self.get_wall_fitness() == other.get_wall_fitness()):
             return True
         else:
             return False
 
     def __ne__(self, other):
-        if(self.fitness != other.fitness or self.shine_fitness != other.shine_fitness or self.wall_fitness != other.wall_fitness):
+        if(self.get_fitness() != other.get_fitness() or self.get_shine_fitness() != other.get_shine_fitness() or self.get_wall_fitness() != other.get_wall_fitness()):
             return True
         else:
             return False

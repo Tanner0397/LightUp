@@ -42,7 +42,7 @@ def write_solution(patero_front):
         file.write("Solutions File\n")
 
     for front_member in patero_front:
-        puzzle = front_member.puzzle
+        puzzle = front_member.get_puzzle()
         fitness = front_member.get_fitness()
         shine_fitness = front_member.get_shine_fitness()
         wall_fitness = front_member.get_wall_fitness()
@@ -51,8 +51,8 @@ def write_solution(patero_front):
             file.write("{} \t {} \t {} \t {} \n".format(fitness, shine_fitness, wall_fitness, len(patero_front)))
 
 
-        rows = puzzle.rows
-        cols = puzzle.cols
+        rows = puzzle.get_rows()
+        cols = puzzle.get_rows()
         wall_panels = puzzle.get_all_walls() #Get all the walls to write down
         bulb_panels = puzzle.get_all_bulbs() #Get all the bulbs to write down
         health_value = puzzle.verify_solution() #obtain health value of the soln
@@ -69,12 +69,12 @@ def write_solution(patero_front):
                 row = wall.row
                 col = wall.col
                 wall_value = puzzle.get_wall_value(wall)
-                file.write(str(col+1) + ' ' + str(puzzle.rows-row) + ' ' + str(wall_value) + '\n') #adjust col to be indexed at 1 and change rows to be flipped and index at 1
+                file.write(str(col+1) + ' ' + str(puzzle.get_rows()-row) + ' ' + str(wall_value) + '\n') #adjust col to be indexed at 1 and change rows to be flipped and index at 1
 
             file.write(str(fitness) + '\n')
 
             for bulb in bulb_panels: #For every bulb in the bulbs list, print it out in the soln file
                 row = bulb.row
                 col = bulb.col
-                file.write(str(col+1) + ' ' + str(puzzle.rows-row) + '\n') #adjust col to be indexed at 1 and change rows to be flipped and index at 1
+                file.write(str(col+1) + ' ' + str(puzzle.get_rows()-row) + '\n') #adjust col to be indexed at 1 and change rows to be flipped and index at 1
             file.write("\n\n\n\n")
