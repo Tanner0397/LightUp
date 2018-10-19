@@ -2,3 +2,5 @@ backups/
 __pycache__/
 build/
 soln_image*.txt
+best.sh
+run_all.sh

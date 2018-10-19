@@ -41,40 +41,42 @@ def write_solution(patero_front):
     with open(solution_file_name, 'w') as file:
         file.write("Solutions File\n")
 
+
+    #First write the puzzle layout for walls - it will be the smae for all solutions
+    with open(solution_file_name, 'a') as file:
+        puzzle = patero_front[0].get_puzzle()
+        cols = puzzle.get_cols()
+        rows = puzzle.get_rows()
+        wall_panels = puzzle.get_all_walls() #Get all the walls to write down
+
+        file.write(str(cols) + '\n') #Format calls for cols first to be printed
+        file.write(str(rows) + '\n')
+
+        for wall in wall_panels: #For evyer wall in the walls list obtained, print it to the solution file
+            row = wall.get_row()
+            col = wall.get_col()
+            wall_value = puzzle.get_wall_value(wall)
+            file.write(str(col+1) + ' ' + str(puzzle.get_rows()-row) + ' ' + str(wall_value) + '\n') #adjust col to be indexed at 1 and change rows to be flipped and index at 1
+        file.write("\n\n\nPatero Front: \n\n")
+
     for front_member in patero_front:
         puzzle = front_member.get_puzzle()
         fitness = front_member.get_fitness()
         shine_fitness = front_member.get_shine_fitness()
         wall_fitness = front_member.get_wall_fitness()
 
-        with open(solution_file_name, 'a') as file:
-            file.write("{} \t {} \t {} \t {} \n".format(fitness, shine_fitness, wall_fitness, len(patero_front)))
-
-
         rows = puzzle.get_rows()
         cols = puzzle.get_rows()
-        wall_panels = puzzle.get_all_walls() #Get all the walls to write down
         bulb_panels = puzzle.get_all_bulbs() #Get all the bulbs to write down
-        health_value = puzzle.verify_solution() #obtain health value of the soln
-
-        # with open(solution_image_file_name, 'w') as file:
-        #     map_image = puzzle.map_image()
-        #     file.write(map_image)
 
         with open(solution_file_name, 'a') as file:
-            file.write(str(cols) + '\n') #Format calls for cols first to be printed
-            file.write(str(rows) + '\n')
-
-            for wall in wall_panels: #For evyer wall in the walls list obtained, print it to the solution file
-                row = wall.row
-                col = wall.col
-                wall_value = puzzle.get_wall_value(wall)
-                file.write(str(col+1) + ' ' + str(puzzle.get_rows()-row) + ' ' + str(wall_value) + '\n') #adjust col to be indexed at 1 and change rows to be flipped and index at 1
-
-            file.write(str(fitness) + '\n')
-
+            file.write("{} \t {} \t {} \t {} \n".format(fitness, shine_fitness, wall_fitness, len(patero_front)))
             for bulb in bulb_panels: #For every bulb in the bulbs list, print it out in the soln file
                 row = bulb.row
                 col = bulb.col
                 file.write(str(col+1) + ' ' + str(puzzle.get_rows()-row) + '\n') #adjust col to be indexed at 1 and change rows to be flipped and index at 1
             file.write("\n\n\n\n")
+
+        # with open(solution_image_file_name, 'w') as file:
+        #     map_image = puzzle.map_image()
+        #     file.write(map_image)

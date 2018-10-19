@@ -104,7 +104,6 @@ class Evolution_Instance:
         #Create domination table after the inital population is already created
         #self.dom_table = domination_table(self.population)
         self.dom_levels = []
-        self.num_levels = 0
         self.update_dom_levels()
 
     """
@@ -134,7 +133,7 @@ class Evolution_Instance:
         return string
 
     """
-    Paramaters: None
+    Paremeters: None
     Return: Integer
     This function simply returns the average fitness of the populaiton
     """
@@ -154,7 +153,7 @@ class Evolution_Instance:
         return average
 
     """
-    Paramaters: None
+    Paremeters: None
     Return: Integer
     This function simply returns the best fitness  of the populaiton
     """
@@ -168,7 +167,7 @@ class Evolution_Instance:
         return min(member.get_wall_fitness() for member in self.population)
 
     """
-    Paramaters: None
+    Paremeters: None
     Return: Population_Member
     This function will return the best level of the front
     """
@@ -176,6 +175,11 @@ class Evolution_Instance:
         best_members = self.dom_levels[0]
         return best_members
 
+    """
+    Parameters: None
+    Return List of Population members
+    returns the list of the current population
+    """
     def get_population(self):
         return self.population
 
@@ -197,9 +201,9 @@ class Evolution_Instance:
         #Having a lower domination is the best, so this is a minimization problem
         #But wer know how many leves we have so taking the number of levels and subtracting it by
         #The domination rank makes this a maximzing problem and less has to change.
-        best_entry_non_domination_rank = self.num_levels - best_entry.get_domination_rank()
+        best_entry_non_domination_rank = len(self.dom_levels) - best_entry.get_domination_rank()
         for i in range(k):
-            current_non_domination_rank = self.num_levels - tourny_list[i].get_domination_rank()
+            current_non_domination_rank = len(self.dom_levels) - tourny_list[i].get_domination_rank()
             if current_non_domination_rank > best_entry_non_domination_rank:
                 best_entry = tourny_list[i]
                 best_entry_non_domination_rank = current_non_domination_rank
@@ -211,15 +215,15 @@ class Evolution_Instance:
     This function returns a parent, and winner is chosed by a weighted choice based off of fitness
     """
     def parent_fitness_proportional_selection(self):
-        #Use num_levels - domination rank for this
-        max = sum([self.num_levels - member.get_domination_rank() for member in self.population])
+        #Use length of dom_levels - domination rank for this
+        max = sum([len(self.dom_levels) - member.get_domination_rank() for member in self.population])
         #fixed point on "roulette wheel"
         choose_point = random.uniform(0, max)
         current = 0
         #Scramble population listing so that the first member of the population isn't chosen everytime, this is an issue when all the fitness scores are 0 (the very beginning)
         self.population = sorted(self.population, key = lambda x: random.random())
         for member in self.population:
-            current += self.num_levels - member.get_domination_rank()
+            current += len(self.dom_levels) - member.get_domination_rank()
             if current >= choose_point:
                 return member
 
@@ -232,7 +236,7 @@ class Evolution_Instance:
         return random.choice(self.population)
 
     """
-    Paramaters: None
+    Paremeters: None
     Return: Population_Member
     This function returns the chosed parent by either fitness proportional or k tourament
     """
@@ -254,29 +258,10 @@ class Evolution_Instance:
     """
     Paramters: None
     Return:  None
-    This function performs a k-tournament but kills population members that do not win
+    Thus function will perform a tournement to select who will be removed from the population, until the population returns to the size of mu
     """
     def survival_tournament(self):
-        try:
-            k = int(config.get("EA_PARAMATERS", "tournament_size_survival"))
-        except configparser.Error:
-            print("Error: tournament_size_survival option under EA_PARAMATERS is missing from config file. Exiting")
-        if k > len(self.population):
-            print("Error: k is larger then the current population. EA is killing more population members than producing. \nPlease Adjust the tournemnt size for survival in the config so the population is stable. Exiting")
-            sys.exit()
-        tourny_participants = random.sample(self.population, k)
-        #Create local domination table and use that
-        local_domination_table = []
-        for member in tourny_participants:
-            insert_into_dom_level(member, local_domination_table)
-        #Sort in ascending order of non domination, reverse the list
-        potential_winners = local_domination_table[0];
-        random_winner = random.choice(potential_winners)
-        for member in tourny_participants:
-            if member != random_winner:
-              self.population.remove(member)
-
-    def survival_tournament_choose_to_die(self):
+        #Do tournamnets until the population size is back to the orginal size (mu)
         while(len(self.population) != self.population_size):
             try:
                 k = int(config.get("EA_PARAMATERS", "tournament_size_survival"))
@@ -291,7 +276,7 @@ class Evolution_Instance:
             local_domination_table = []
             for member in tourny_participants:
                 insert_into_dom_level(member, local_domination_table)
-            #List if the most dominated solutions
+            #List of the most dominated solutions
             potential_losers = local_domination_table[-1];
             random_loser = random.choice(potential_losers)
             #print(random_loser.get_fitness())
@@ -346,13 +331,13 @@ class Evolution_Instance:
         for i in range(self.population_size):
             #fixed point on "roulette wheel"
             #Same as parent, use domination rank
-            max = sum([self.num_levels - member.get_domination_rank() for member in population_copy])
+            max = sum([len(self.dom_levels) - member.get_domination_rank() for member in population_copy])
             choose_point = random.uniform(0, max)
             current = 0
             #Scramble population listing so that the first member of the population isn't chosen everytime, this is an issue when all the fitness scores are 0 (the very beginning)
             population_copy = sorted(population_copy, key = lambda x: random.random())
             for member in population_copy:
-                current += self.num_levels - member.get_domination_rank()
+                current += len(self.dom_levels) - member.get_domination_rank()
                 if current >= choose_point:
                     surviving_members.append(copy.deepcopy(member))
                     population_copy.remove(member)
@@ -362,7 +347,7 @@ class Evolution_Instance:
         return
 
     """
-    Paramaters: None
+    Paremeters: None
     Return: None
     This function simply decides how the population will survive, either by trunctaion or k tournament
     """
@@ -371,7 +356,7 @@ class Evolution_Instance:
             if config.get("EA_PARAMATERS", "survival_selection") == 'trun':
                 self.truncate_population()
             elif config.get("EA_PARAMATERS", "survival_selection") == "k_tourn":
-                self.survival_tournament_choose_to_die()
+                self.survival_tournament()
             elif config.get("EA_PARAMATERS", "survival_selection") == "fitness_prop":
                 self.survival_fitness_proportional_selection()
             elif config.get("EA_PARAMATERS", "survival_selection") == "random":
@@ -385,7 +370,7 @@ class Evolution_Instance:
 
 
     """
-    Paramaters: Population_Member, Population_Member
+    Paremeters: Population_Member, Population_Member
     Return: Chromosome Object
     This function takes the chromosomes from parents 1 and 2, and does a single point crossover of the genes
     This creates 2 chromosomes and chooses one of them randomly based off of a coin flip.
@@ -424,6 +409,12 @@ class Evolution_Instance:
             return new_chromosome_1
         return new_chromosome_2
 
+    """
+    Parameters: Poplation member, Population Member
+    Return: Chromosome Object
+    This function will perform n point crossover with the n defined in the config file. However due to the fact that chromsomes may vary in size,
+    if you cannot find n points to crossover with because of the size dopf either parent, it will refault to single point crossover.
+    """
     def n_point_crossover(self, parent_1, parent_2):
         #Make chromsomes, create copes if parents to orginal values dont change
         chromosome_1 = copy.deepcopy(parent_1.get_chromosome())
@@ -507,7 +498,7 @@ class Evolution_Instance:
 
 
     """
-    Paramaters: Chromosome
+    Paremeters: Chromosome
     Return: None
     This function will mutate a chromosome given to it based off of the mutation_rate parameter in the config file. This will go through each entry in the chromosome
     and determine if that gene should be mutated. However since the chromosome is a tuple of integers, after mutating the gene based off of a random number generator
@@ -542,7 +533,7 @@ class Evolution_Instance:
                     chromo[i] = new_gene
 
     """
-    Paramaters: Population_Member
+    Paremeters: Population_Member
     Return: none
     This function is a second type of mutation that will insert a new gene into the chromosome of a member
     This is added because if throughout the entire population no solution has the right number of bulbs to reach the global optimal
@@ -564,13 +555,22 @@ class Evolution_Instance:
             if member.valid_gene(new_gene) == True:
                 member.insert_new_gene(new_gene)
 
-
+    """
+    Parmeters: Chromsome
+    Return: Population member
+    This function takes in a chromsome and creates a population member with that chromsome
+    """
     def create_new_member(self, chromo):
         #Create copy of blank puzzle for new member
         puzzle_copy = copy.deepcopy(self.puzzle)
         new_member = Population_Member(puzzle_copy, chromo)
         return new_member
 
+    """
+    Parameters: Population member
+    Return: none
+    This function will insert the member passed into the EA's population 
+    """
     def add_new_member(self, member):
         self.population.append(member)
         insert_into_dom_level(member, self.dom_levels)
@@ -596,7 +596,6 @@ class Evolution_Instance:
         self.dom_levels.clear()
         for member in self.population:
             insert_into_dom_level(member, self.dom_levels)
-        self.num_levels = len(self.dom_levels)
 
     #used for testing to see domination levels are generated correctly
     def print_dom_levels(self):

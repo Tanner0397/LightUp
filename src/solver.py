@@ -11,6 +11,7 @@ import configparser
 import solution_logger
 import copy
 from evolution import Evolution_Instance
+from evolution import insert_into_dom_level
 from population_member import Population_Member
 from chromosome import chromosome
 
@@ -179,10 +180,13 @@ def evolution_algorithm(puzzle):
 
                 #Finally add them to the population
                 EA_instance.add_new_member(new_child)
+                #We don't need to update the whole dom levels list because only 1 child is being added and no parents are being removed.
+                insert_into_dom_level(new_child, EA_instance.dom_levels)
                 #EA_instance.update_dom_levels()
         #Comma survival, all the population will be terminated and replaced by all the children. Then populaiton will be weeded out to mu members again. (When doing the normal survival)
         else:
             new_population = []
+            #Here we create all the children, and then set every child created as the new population set.
             for i in range(new_children):
                 first_parent = EA_instance.select_parent()
                 second_parent = EA_instance.select_parent()
@@ -204,11 +208,14 @@ def evolution_algorithm(puzzle):
             #clear old population
             EA_instance.clear_population()
             EA_instance.set_population(new_population)
-            #EA_instance.update_dom_levels()
+            #Update dom levels in order to do survival
+            EA_instance.update_dom_levels()
 
         #Now that a new generation has been made, we must now dtermine which solutions get to survive
+        #Note: The dom table will be updated after every generation for comma, and for plus ius updated after every child is created and inserted
+        #However, it will have to be updated after survival
         EA_instance.population_survival()
-        EA_instance.update_dom_levels()
+        EA_instance.update_dom_levels() #Update after
 
         #Stop the loop, we have over stepped. This is only a problem when the number of generations doe snot fit well with the number of total evaluations
         if current_eval > evals:

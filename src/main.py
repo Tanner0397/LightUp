@@ -77,7 +77,7 @@ def main():
     best_patero_front = []
 
     for run_id in range(runs):
-        print("Startin Run " + str(run_id+1))
+        print("Starting Run " + str(run_id+1))
         solution_logger.start_new_block(run_id+1)
         #------------GENERATE/READ A PUZZLE----------------
         #Puzzles are generated for each run of the program
@@ -117,19 +117,19 @@ def main():
             num_current_dominates = 0
             #The number of solutions in the best found patero front that dominate at least 1 solution in the cuurrent patero front
             num_best_dominates = 0
-            #compute num dominates for both 
+            #compute num dominates for both
             for current_member in current_patero_front:
                 for best_member in best_patero_front:
                     #If the member in the currente patero front is better than a solution found this far, increse counter
                     if dominates(current_member, best_member):
                         num_current_dominates+=1
                         break
-                for best_member in best_patero_front:
-                    for current_member in current_patero_front:
-                        #if the member in the best sounf thus far is better than a soltion in the current parero front, increse counter
-                        if dominates(best_member, current_member):
-                            num_best_dominates+=1
-                            break
+            for best_member in best_patero_front:
+                for current_member in current_patero_front:
+                    #if the member in the best sounf thus far is better than a soltion in the current parero front, increse counter
+                    if dominates(best_member, current_member):
+                        num_best_dominates+=1
+                        break
             current_proportion = num_current_dominates/len(current_patero_front)
             best_proportion = num_current_dominates/len(best_patero_front)
             if(current_proportion > best_proportion):
