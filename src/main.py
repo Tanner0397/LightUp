@@ -106,7 +106,7 @@ def main():
         #---------ENDING PUZZLE GENERATION/READING--------------
         """
          The solution file should consist of the best Pareto front found in any run, where we count Pareto front
-         P1 as better than Pareto front P2 if the proportion of solutions in P1 which dominate at least on solution in P2 is larger than the proportion of solutions in
+         P1 as better than Pareto front P2 if the proportion of solutions in P1 which dominate at least one solution in P2 is larger than the proportion of solutions in
          P2 which dominate at least one solution in P1.
         """
         #---------START SOLVING PUZZLE FOR THIS RUN------------
@@ -130,14 +130,14 @@ def main():
                     if dominates(best_member, current_member):
                         num_best_dominates+=1
                         break
-            current_proportion = num_current_dominates/len(current_patero_front)
-            best_proportion = num_current_dominates/len(best_patero_front)
-            if(current_proportion > best_proportion):
-                best_patero_front = current_patero_front
+            current_proportion = num_current_dominates
+            best_proportion = num_best_dominates
+            if(current_proportion >= best_proportion):
+                best_patero_front = copy.deepcopy(current_patero_front)
                 solution_writer.write_solution(best_patero_front)
 
         else:
-            best_patero_front = current_patero_front
+            best_patero_front = copy.deepcopy(current_patero_front)
             solution_writer.write_solution(best_patero_front)
         #---------END SOLVING-----------------------
 
